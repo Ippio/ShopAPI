@@ -4,6 +4,7 @@ require('express-async-errors')
 //packages
 const cookieParser = require('cookie-parser');
 const rateLimiter = require('express-rate-limit')
+var cors = require('cors')
 
 //express
 const express = require('express')
@@ -22,6 +23,9 @@ const orderRouter = require('./routes/orderRoutes')
 //middlewware
 const notFound = require('./middleware/not-found')
 
+app.use(cors({
+    origin: "*"
+}))
 app.use(express.json())
 app.use(cookieParser(process.env.JWT_SECRET))
 app.use(express.urlencoded({ extended: false }))
