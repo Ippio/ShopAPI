@@ -1,0 +1,38 @@
+body {
+    background-color: var(--md-background);
+}
+
+#__layout, #__nuxt, body, html {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.flex-grow {
+    flex-grow: 1;
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.flex-shrink {
+    flex-shrink: 1;
+}
+
+.md\:h-full {
+    height: 100%;
+}
+
+.bg-accent {
+    background-color: var(--md-accent);
+}
+
+.h-screen {
+    height: 100vh;
+}
