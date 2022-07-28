@@ -90,6 +90,15 @@ const getProductDetail = asyncWrapper(async (req, res) => {
     }
 })
 
+// Public Route 
+// Find Product By ID   =>    POST /product/:id
+const FindByID = async(req,res,next)=>{
+    const {id} = req.params 
+    const  product = await Product.find({_id: id}).populate('productType','name').populate('brand','name').populate('brand', 'name').populate('listProductGroupDetail', 'name nameAscii price productNameAscii storage storageAscii')
+    if(!product) throw new NotFoundError(`there is no product with ${id}`)
+    res.status(StatusCodes.OK).json({error:false,product:product})
+}
+
 // Protected Route 
 // Create Product   =>    POST /product
 const createProduct = async (req, res) => {
@@ -137,6 +146,7 @@ module.exports = {
     getHome,
     getProductList,
     getProductDetail,
+    FindByID,
     createProduct,
     updateProduct,
     deleteProduct,

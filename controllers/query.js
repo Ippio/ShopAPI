@@ -24,7 +24,7 @@ const query = asynWrapper(async (req, res) => {
     //         runValidators:true
     //     })
     // })
-    const data = await Order.find()
+    const data = await Product.findOne()
     res.status(200).json({ msg: 'execute completed', data })
 })
 
