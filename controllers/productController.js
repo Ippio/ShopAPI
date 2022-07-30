@@ -12,9 +12,14 @@ const {StatusCodes} = require('http-status-codes')
 const getHome= async(req,res)=>{
     const arr = ['dien-thoai','may-tinh-xach-tay','may-tinh-bang']
     const listProductType = await ProductType.find({nameAscii: arr},'_id')
-    const phones = await Product.find({productType: listProductType[0]},'brand productType nameExt listProductGroupDetail totalOrder urlPicture ').sort('-totalOrder').populate('productType','nameAscii').limit(8)
+   
+    const phones =  Product.find({productType: listProductType[0]},'brand productType nameExt listProductGroupDetail totalOrder urlPicture price').sort('-totalOrder').populate('productType','nameAscii').populate('brand', 'name').populate('listProductGroupDetail', 'price name storage').limit(8)
+    const laptops =  Product.find({productType:listProductType[1]},'brand productType nameExt listProductGroupDetail totalOrder urlPicture price').sort('-totalOrder').populate('productType','nameAscii').populate('brand', 'name').populate('listProductGroupDetail', 'price name storage').limit(8)
+    const ipads =  Product.find({productType: listProductType[2]},'brand productType nameExt listProductGroupDetail totalOrder urlPicture price').sort('-totalOrder').populate('productType','nameAscii').populate('brand', 'name').populate('listProductGroupDetail', 'price name storage').limit(8)
 
-    res.status(StatusCodes.OK).json({error:false, products: phones})
+    const listProduct =[await phones,await laptops,await ipads]
+
+    res.status(StatusCodes.OK).json({error:false, products: listProduct})
     // const 
 }
 
@@ -28,10 +33,11 @@ const getProductList = asyncWrapper(async (req, res) => {
     const queryObject = {}
     const type = await (ProductType.findOne({ nameAscii: productType }, '_id'))
 
+    const page = Number(req.query.page) || 1
+    const limit = 20
+    const skip = (page - 1) * limit
+
     if (type) {
-        const page = Number(req.query.page) || 1
-        const limit = 20
-        const skip = (page - 1) * limit
 
         queryObject.productType = type
 
@@ -43,13 +49,13 @@ const getProductList = asyncWrapper(async (req, res) => {
             queryObject.brand = listBrand
         }
 
-        const products = Product.find(queryObject, 'brand description nameExt listProductGroupDetail totalOrder urlPicture').populate('brand', 'name').populate('listProductGroupDetail', 'price name storage')
+        const products = Product.find(queryObject, 'brand description nameExt listProductGroupDetail totalOrder urlPicture price').populate('brand', 'name').populate('listProductGroupDetail', 'price name storage')
         const totalProduct = await products.clone().countDocuments()
         const listProduct = await products.skip(skip).limit(limit)
-        return res.status(StatusCodes.OK).json({ success: true, data:{categoryName:type.name,listProduct, totalProduct }})
+        return res.status(StatusCodes.OK).json({ error: false, data:{categoryName:type.name,listProduct, totalProduct,currentPage: page  }})
     }
     else {
-        return res.status(StatusCodes.NOT_FOUND).json({ error: true, msg: 'Not found' })
+        return res.status(StatusCodes.NOT_FOUND).json({ error: true, msg: 'Not found'})
     }
 })
 

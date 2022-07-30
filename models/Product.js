@@ -111,6 +111,7 @@ const productSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    price:Number,
     totalOrder: { type: Number, default: Math.floor(Math.random() * 1500) + 100 },
     urlHotPicture: { type: String },
     urlPicture: { type: String },

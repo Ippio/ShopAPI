@@ -8,24 +8,16 @@ const asynWrapper = require('../middleware/asyncWrapper')
 const Order = require('../models/Order')
 
 const query = asynWrapper(async (req, res) => {
-    // const productList = await Product.find({},'productType nameExt')
-    // const productTypeList = await ProductType.find({},'name')
-    
-    // await productTypeList.forEach(productType=>{
-    //     productType.listProduct=[]
-    //     productList.forEach(product=>{
-    //         if(product.productType.toString() == productType._id.toString()) productType.listProduct.push(product._id)
-    //     })
-    // })
 
-    // await productTypeList.forEach(async(item)=>{
-    //     await ProductType.findByIdAndUpdate({_id:item._id},{listProduct: item.listProduct},{
+    const data = await Product.find({listProductGroupDetail:[]},'_id price nameExt listProductGroupDetail')
+    // await data.forEach(async(product)=>{
+    //     await Product.findOneAndUpdate({_id: product._id},{price : Number(Math.floor(Math.random() * 20000000) + 3000000)},{
     //         new:true,
-    //         runValidators:true
+    //         runValidators: true
     //     })
     // })
-    const data = await Product.findOne()
-    res.status(200).json({ msg: 'execute completed', data })
+    res.status(200).json({ msg: 'execute completed',data})
+
 })
 
 module.exports = {
