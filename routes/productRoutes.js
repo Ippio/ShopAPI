@@ -1,7 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const {authenticateUser, authorizeRole} = require('../middleware/authentication')
-
+const upload = require('../middleware/multer-upload')
 
 const {
     getHome,
@@ -13,8 +13,10 @@ const {
     deleteProduct,
 } = require('../controllers/productController')
 
-router.route('/product/:id').get(FindByID).post(authenticateUser,createProduct).patch(authenticateUser,updateProduct).delete(authenticateUser,authorizeRole('admin'),deleteProduct)
+
+router.route('/product/:id').get(FindByID).delete(authenticateUser,authorizeRole('admin'),deleteProduct).patch(upload.single('urlPicture'),updateProduct)
 router.route('/home').get(getHome)
+router.route('/product').post(upload.single('urlPicture'),createProduct)
 router.route('/product/type/:productType').get(getProductList)
 router.route('/product/type/:productType/:name').get(getProductDetail)
 

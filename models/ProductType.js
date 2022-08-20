@@ -7,11 +7,11 @@ const listBrandSchema = new mongoose.Schema({
 })
 
 const productTypeSchema = new mongoose.Schema({
-    id:Number,
     name:String,
     nameAscii:String,
+    subName:String,
     totalProduct:Number,
-    listProduct:[{type:mongoose.Types.ObjectId , ref: 'Product'}]
+    // listProduct:[{type:mongoose.Types.ObjectId , ref: 'Product'}]
 })
 
 module.exports = mongoose.model('ProductType',productTypeSchema,'ProductType')

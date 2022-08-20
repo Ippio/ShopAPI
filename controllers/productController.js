@@ -3,23 +3,54 @@ const ProductType = require('../models/ProductType')
 const ProductGroup = require('../models/ProductGroup')
 const Brand = require('../models/Brand')
 const asyncWrapper = require('../middleware/asyncWrapper')
-const { BadRequestError, UnauthenticatedError,NotFoundError } = require('../errors')
-const {StatusCodes} = require('http-status-codes')
+const { BadRequestError, UnauthenticatedError, NotFoundError } = require('../errors')
+const { StatusCodes } = require('http-status-codes')
+const upload = require('../middleware/multer-upload')
 
 // Public Route
 // Get Home  =>    GET /home
 
-const getHome= async(req,res)=>{
-    const arr = ['dien-thoai','may-tinh-xach-tay','may-tinh-bang']
-    const listProductType = await ProductType.find({nameAscii: arr},'_id')
-   
-    const phones =  Product.find({productType: listProductType[0]},'brand productType nameExt listProductGroupDetail totalOrder urlPicture price').sort('-totalOrder').populate('productType','nameAscii').populate('brand', 'name').populate('listProductGroupDetail', 'price name storage').limit(8)
-    const laptops =  Product.find({productType:listProductType[1]},'brand productType nameExt listProductGroupDetail totalOrder urlPicture price').sort('-totalOrder').populate('productType','nameAscii').populate('brand', 'name').populate('listProductGroupDetail', 'price name storage').limit(8)
-    const ipads =  Product.find({productType: listProductType[2]},'brand productType nameExt listProductGroupDetail totalOrder urlPicture price').sort('-totalOrder').populate('productType','nameAscii').populate('brand', 'name').populate('listProductGroupDetail', 'price name storage').limit(8)
-
-    const listProduct =[await phones,await laptops,await ipads]
-
-    res.status(StatusCodes.OK).json({error:false, products: listProduct})
+const getHome = async (req, res) => {
+    const arr = ['dien-thoai', 'may-tinh-xach-tay', 'may-tinh-bang']
+    const listProductType = await ProductType.find({ nameAscii: arr }, '_id')
+    const arr1 = listProductType.reduce((arr, type) => {
+        arr.push(type._id)
+        return arr
+    }, [])
+    const products = await Product.find({ productType: arr1 }, '',
+        {
+            projection: {
+                listPictureBreakBox: 0,
+                listPictureFromCamera: 0,
+                listPictureGallery: 0,
+                listPictureInBox: 0,
+                productAttributes: 0,
+                listAttrDetailShort: 0,
+                listPictureSlide: 0
+            }
+        }).limit(24).sort('totalOrder').populate('brand', 'name').populate('productType', 'name nameAscii')
+    const obj = {
+        phone: [],
+        laptop: [],
+        ipad: []
+    }
+    products.forEach(product => {
+        // console.log(product.productType.nameAscii)
+        switch (product.productType.nameAscii) {
+            case 'dien-thoai':
+                obj.phone = [...obj.phone,product]
+                break;
+            case 'may-tinh-xach-tay':
+                obj.laptop = [...obj.laptop,product]
+                break;
+            case 'may-tinh-bang':
+                obj.ipad = [...obj.ipad,product]
+                break;
+            default:
+                break;
+        }
+    })
+    res.status(StatusCodes.OK).json({ error: false, products: obj })
     // const 
 }
 
@@ -31,6 +62,24 @@ const getProductList = asyncWrapper(async (req, res) => {
     const { productType } = req.params
     let { sort, brand } = req.query
     const queryObject = {}
+    if (sort) {
+        switch (sort) {
+            case "Bán chạy":
+                sort = '-totalOrder'
+                break;
+            case "Mới nhất":
+                sort = '-createdAt'
+                break;
+            case "Giá cao":
+                sort = '-price'
+                break;
+            case "Giá thấp":
+                sort = 'price'
+                break;
+            default:
+                break;
+        }
+    }
     const type = await (ProductType.findOne({ nameAscii: productType }, '_id'))
 
     const page = Number(req.query.page) || 1
@@ -49,15 +98,16 @@ const getProductList = asyncWrapper(async (req, res) => {
             queryObject.brand = listBrand
         }
 
-        const products = Product.find(queryObject, 'brand description nameExt listProductGroupDetail totalOrder urlPicture price').populate('brand', 'name').populate('listProductGroupDetail', 'price name storage')
+        const products = Product.find(queryObject, '', { projection: { updatedAt: 0, createdAt: 0, __v: 0 } }).populate('brand', 'name nameAscii').populate('productType').sort(`${sort}`)
         const totalProduct = await products.clone().countDocuments()
         const listProduct = await products.skip(skip).limit(limit)
-        return res.status(StatusCodes.OK).json({ error: false, data:{categoryName:type.name,listProduct, totalProduct,currentPage: page  }})
+        return res.status(StatusCodes.OK).json({ error: false, data: { categoryName: type.name, listProduct, totalProduct, currentPage: page } })
     }
     else {
-        return res.status(StatusCodes.NOT_FOUND).json({ error: true, msg: 'Not found'})
+        return res.status(StatusCodes.NOT_FOUND).json({ error: true, msg: 'Not found' })
     }
 })
+
 
 // Public Route
 // Get Product Detail  =>    GET /:productype/:name
@@ -98,29 +148,43 @@ const getProductDetail = asyncWrapper(async (req, res) => {
 
 // Public Route 
 // Find Product By ID   =>    POST /product/:id
-const FindByID = async(req,res,next)=>{
-    const {id} = req.params 
-    const  product = await Product.find({_id: id}).populate('productType','name').populate('brand','name').populate('brand', 'name').populate('listProductGroupDetail', 'name nameAscii price productNameAscii storage storageAscii')
-    if(!product) throw new NotFoundError(`there is no product with ${id}`)
-    res.status(StatusCodes.OK).json({error:false,product:product})
+const FindByID = async (req, res) => {
+    const { id } = req.params
+    const product = await Product.findOne({ _id: id }).populate('productType').populate('brand')
+    if (!product) throw new NotFoundError(`there is no product with ${id}`)
+    res.status(StatusCodes.OK).json({ error: false, product: product })
 }
 
 // Protected Route 
 // Create Product   =>    POST /product
 const createProduct = async (req, res) => {
-    req.body.user = req.user.userId;
-    const product = await Product.create(req.body);
-    res.status(StatusCodes.CREATED).json({ product });
-  };
+    // kiểm tra sản phẩm tồn tại hay k
+    const check = await Product.findOne({ name: req.body.nameAscii })
+    if (check) throw new BadRequestError('Tên sản phẩm đã tồn tại')
+
+    try {
+        const image = req.file.path
+        const newProduct = new Product({ ...req.body, urlPicture: image })
+        newProduct.save()
+        res.status(StatusCodes.CREATED).json({ error: false, newProduct: newProduct });
+    } catch (error) {
+        const newProduct = new Product({ ...req.body })
+        newProduct.save()
+        res.status(StatusCodes.CREATED).json({ error: false, newProduct: newProduct });
+    }
+};
 
 
 // Protected Route 
 // Update Product  =>    PATCH /product/:id
 
 const updateProduct = async (req, res) => {
-    const { id: productId } = req.params;
-
-    const product = await Product.findOneAndUpdate({ _id: productId }, req.body, {
+    const { _id } = req.body;
+    try {
+        const image = req.file.path
+        req.body.urlPicture = image
+    } catch (error) { }
+    const product = await Product.findOneAndUpdate({ _id: _id }, req.body, {
         new: true,
         runValidators: true,
     });
@@ -128,7 +192,7 @@ const updateProduct = async (req, res) => {
     if (!product) {
         throw new NotFoundError(`No product with id : ${productId}`);
     }
-    res.status(StatusCodes.OK).json({ product });
+    res.status(StatusCodes.OK).json({ error: false, product });
 };
 
 // Protected Route / Admin Only

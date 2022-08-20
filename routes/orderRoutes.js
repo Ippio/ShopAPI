@@ -9,7 +9,7 @@ const {
     deleteOrder
 } = require('../controllers/orderController')
 
-router.route('/order').get(authenticateUser,getListOrder).post(createOrder)
-router.route('/order/:id').patch(authenticateUser,updateOrder).delete(authenticateUser,authorizeRole('admin'),deleteOrder)
+router.route('/order').get(getListOrder).post(createOrder)
+router.route('/order/:id').patch(updateOrder).delete(deleteOrder)
 
 module.exports = router

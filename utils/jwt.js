@@ -22,6 +22,7 @@ const sendResponseWithCookie = ( res, statusCode, user, options ) => {
     httpOnly: true,
     expires: new Date(Date.now() + process.env.JWT_COOKIE_LIFETIME * oneDay),
     signed: true,
+    secure: false
     // secure flag later
   })
   res.status(statusCode).json({ user, token });

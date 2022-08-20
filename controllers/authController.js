@@ -13,7 +13,7 @@ const register = async (req, res) => {
     const newUser = await User.create({ ...req.body })
     // const token = newUser.createJWT()
     // res.status(StatusCodes.CREATED).json({ newUser: { username: newUser.username }, msg:'Register !!' ,token})
-    sendResponseWithCookie(res, StatusCodes.CREATED, { id: newUser._id, name: newUser.name, role: newUser.role })
+    sendResponseWithCookie(res, StatusCodes.CREATED, { id: newUser._id, username: newUser.username, role: newUser.role })
 }
 
 const login = async (req, res) => {
@@ -36,7 +36,7 @@ const login = async (req, res) => {
     // res.cookie('LOGIN_INFO',token,{ maxAge:1000*60*60*24*30})
     // return res.status(StatusCodes.OK).json({ user: { username: user.username }, msg:'Login !!' ,token})
 
-    sendResponseWithCookie(res, StatusCodes.OK,  { id: user._id, name: user.name, role: user.role })
+    sendResponseWithCookie(res, StatusCodes.OK,  { id: user._id, username: user.username, role: user.role })
 }
 
 const logout = async (req, res) => {

@@ -19,26 +19,31 @@ const database = require('./routes/database')
 const productRouter = require('./routes/productRoutes')
 const authRouter = require('./routes/authRoutes')
 const orderRouter = require('./routes/orderRoutes')
+const userRouter = require('./routes/userRoutes')
 
 //middlewware
 const notFound = require('./middleware/not-found')
 
 app.use(cors({
-    origin: "*"
+    origin: "http://localhost:3000",
+    // allowedHeaders:'*',
+    credentials: true,  
+    // exposedHeaders: ["set-cookie"]
 }))
 app.use(express.json())
 app.use(cookieParser(process.env.JWT_SECRET))
 app.use(express.urlencoded({ extended: false }))
-app.use('/',express.static('./public'))
+app.use('/',express.static('./'))
 app.use('/',fptRouter)
 app.use('/',database)
 app.use('/',productRouter)
 app.use('/',authRouter)
 app.use('/',orderRouter)
+app.use('/',userRouter)
 app.use(rateLimiter({ windowMs: 60 * 1000, max: 150 }))
 app.use('/',notFound)
 
-const port =  5000
+const port =  5001
 
 //star server
 const start = async () => {

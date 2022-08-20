@@ -17,34 +17,39 @@ const customerInfoSchema = mongoose.Schema({
         type: Number,
         type: String,
         required: [true, 'Please provide phone number'],
+        address: {
+            type: String,
+            required: true
+        },
+        note: String
     }
-})
+}, { _id: false })
 
 const SingleOrderItemSchema = mongoose.Schema({
     product: {
-        type: mongoose.Schema.ObjectId,
+        type: mongoose.Types.ObjectId,
         ref: 'Product',
         required: true,
     },
-    productType: Object,
-    productVariant: Object,
-    price: { type: Number, required: true },
+    // productType: Object,
+    // productVariant: mongoose.Types.ObjectId,
+    // price: { type: Number, required: true },
     amount: { type: Number, required: true },
-});
+}, { _id: false });
 
 const orderSchema = mongoose.Schema({
     customerInfo: {
-        type:customerInfoSchema,
+        type: customerInfoSchema,
         required: true
     },
-    orderItems: {
-        type:SingleOrderItemSchema,
-        required:true
-    },
+    orderItems: [{
+        type: SingleOrderItemSchema,
+        required: true,
+    }],
     status: {
         type: String,
-        enum: ['pending', 'paid', 'delivered', 'canceled', 'complete'],
-        default: 'pending',
+        enum: ['Chưa duyệt', 'Duyệt', 'Đang giao', 'Hoàn tất', 'Hủy'],
+        default: 'Chưa duyệt',
     },
     shippingFee: {
         type: Number,
