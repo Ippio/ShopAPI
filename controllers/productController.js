@@ -38,13 +38,13 @@ const getHome = async (req, res) => {
         // console.log(product.productType.nameAscii)
         switch (product.productType.nameAscii) {
             case 'dien-thoai':
-                obj.phone = [...obj.phone,product]
+                obj.phone = [...obj.phone, product]
                 break;
             case 'may-tinh-xach-tay':
-                obj.laptop = [...obj.laptop,product]
+                obj.laptop = [...obj.laptop, product]
                 break;
             case 'may-tinh-bang':
-                obj.ipad = [...obj.ipad,product]
+                obj.ipad = [...obj.ipad, product]
                 break;
             default:
                 break;
@@ -213,6 +213,13 @@ const deleteProduct = async (req, res) => {
 
 }
 
+const searchProduct = async (req, res) => {
+    const key = req.params.key.trim()
+    const products = await Product.find({ name: { $regex: new RegExp('^' + key + '.*', 'i') } }).limit(8)
+    if (products.length === 0) throw new BadRequestError('There is no product')
+    res.status(StatusCodes.OK).json({ error: false, products: products })
+}
+
 module.exports = {
     getHome,
     getProductList,
@@ -221,4 +228,5 @@ module.exports = {
     createProduct,
     updateProduct,
     deleteProduct,
+    searchProduct,
 }

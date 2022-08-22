@@ -11,6 +11,7 @@ const {
     createProduct,
     updateProduct,
     deleteProduct,
+    searchProduct,
 } = require('../controllers/productController')
 
 
@@ -19,5 +20,6 @@ router.route('/home').get(getHome)
 router.route('/product').post(upload.single('urlPicture'),createProduct)
 router.route('/product/type/:productType').get(getProductList)
 router.route('/product/type/:productType/:name').get(getProductDetail)
+router.route('/product/search/:key').get(searchProduct)
 
 module.exports = router
