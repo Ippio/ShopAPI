@@ -150,6 +150,7 @@ const getProductDetail = asyncWrapper(async (req, res) => {
 // Find Product By ID   =>    POST /product/:id
 const FindByID = async (req, res) => {
     const { id } = req.params
+    console.log(id)
     const product = await Product.findOne({ _id: id }).populate('productType').populate('brand')
     if (!product) throw new NotFoundError(`there is no product with ${id}`)
     res.status(StatusCodes.OK).json({ error: false, product: product })

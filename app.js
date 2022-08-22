@@ -43,7 +43,7 @@ app.use('/',userRouter)
 app.use(rateLimiter({ windowMs: 60 * 1000, max: 150 }))
 app.use('/',notFound)
 
-const port =  5001
+const port =  5000
 
 //star server
 const start = async () => {

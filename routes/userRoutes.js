@@ -10,6 +10,6 @@ const {
 } = require('../controllers/userController')
 
 router.route('/user').get(getListUser)
-router.route('/user/:id').get(authenticateUser,getUser).patch(updateUser).delete(authenticateUser,authorizeRole('admin'),deleteUser)
+router.route('/user/:id').get(authenticateUser,getUser).patch(updateUser).delete(deleteUser)
 
 module.exports = router
