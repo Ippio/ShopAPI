@@ -31,13 +31,12 @@ const createOrder = async (req, res) => {
     const order = await Order.create(req.body)
     const customer = await Customer.find({ name: req.body.customerInfo.name, phoneNumber: req.body.customerInfo.phoneNumber })
     if (customer.length === 0) {
-        const newCustomer = new Customer()
-        newCustomer = {
+        const newCustomer = new Customer({
             name: req.body.customerInfo.name,
             email: req.body.customerInfo.email,
             phoneNumber: req.body.customerInfo.phoneNumber,
             listOrder: [order._id]
-        }
+        })
         newCustomer.save()
         // Customer.create({ ...req.body.customerInfo, listOrder: [order._id] })
     }

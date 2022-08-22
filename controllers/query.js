@@ -10,7 +10,7 @@ const Customer = require('../models/Customer')
 
 const query = asynWrapper(async (req, res) => {
     
-    const result = await User.find({})
+    const result = await Order.find({})
     res.status(200).json({ msg: 'execute completed',result})
 })
 

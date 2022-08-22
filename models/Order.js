@@ -14,15 +14,14 @@ const customerInfoSchema = mongoose.Schema({
         },
     },
     phoneNumber: {
-        type: Number,
         type: String,
         required: [true, 'Please provide phone number'],
-        address: {
-            type: String,
-            required: true
-        },
-        note: String
-    }
+    },
+    address: {
+        type: String,
+        required: true
+    },
+    textNote: String
 }, { _id: false })
 
 const SingleOrderItemSchema = mongoose.Schema({
@@ -56,6 +55,7 @@ const orderSchema = mongoose.Schema({
         required: true,
         default: 20000,
     },
+    tax:Number,
     subTotal: {
         type: Number,
         required: true,
