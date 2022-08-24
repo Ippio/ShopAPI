@@ -6,10 +6,12 @@ const {
     getListOrder,
     createOrder,
     updateOrder,
-    deleteOrder
+    deleteOrder,
+    searchOrder
 } = require('../controllers/orderController')
 
 router.route('/order').get(getListOrder).post(createOrder)
 router.route('/order/:id').patch(updateOrder).delete(deleteOrder)
+router.route('/order/search/:key').get(searchOrder)
 
 module.exports = router

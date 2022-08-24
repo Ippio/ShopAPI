@@ -73,9 +73,18 @@ const deleteUser = async (req, res) => {
 
 }
 
+const searchUser = async (req, res) => {
+    const key = req.params.key.trim()
+    const users = await User.find({ username: { $regex: new RegExp('^' + key + '.*', 'i') } }).limit(32)
+    if (users.length === 0) throw new BadRequestError('There is no user')
+    res.status(StatusCodes.OK).json({ error: false, users: users })
+}
+
+
 module.exports = {
     getListUser,
     getUser,
     updateUser,
-    deleteUser
+    deleteUser,
+    searchUser,
 }

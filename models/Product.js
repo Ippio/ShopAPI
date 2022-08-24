@@ -50,6 +50,7 @@ const productSchema = new mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    quantity: { type: Number, default: Math.floor(Math.random() * 100) + 10 },
     price:Number,
     status:{
         type:String,

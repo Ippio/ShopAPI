@@ -20,8 +20,8 @@ const getListOrder = async (req, res) => {
     }
     const orders = Order.find(queryObj)
     const data = await orders.sort({ 'createdAt': -1 }).skip(skip).limit(limit).populate('orderItems.product', 'name urlPicture price')
-    const totalOrders= await orders.clone().countDocuments() 
-    res.status(StatusCodes.OK).json({ error: false, orders: data, totalOrders:totalOrders })
+    const totalOrders = await orders.clone().countDocuments()
+    res.status(StatusCodes.OK).json({ error: false, orders: data, totalOrders: totalOrders })
 }
 
 // Public Route
@@ -29,8 +29,12 @@ const getListOrder = async (req, res) => {
 
 const createOrder = async (req, res) => {
     const order = await Order.create(req.body)
-    const customer = await Customer.find({ name: req.body.customerInfo.name, phoneNumber: req.body.customerInfo.phoneNumber })
-    if (customer.length === 0) {
+    const customer = await Customer.findOneAndUpdate({ phoneNumber: req.body.customerInfo.phoneNumber }, { name: req.body.customerInfo.name, },
+        {
+            new: true,
+            runValidators: true
+        })
+    if (!customer) {
         const newCustomer = new Customer({
             name: req.body.customerInfo.name,
             email: req.body.customerInfo.email,
@@ -41,8 +45,9 @@ const createOrder = async (req, res) => {
         // Customer.create({ ...req.body.customerInfo, listOrder: [order._id] })
     }
     else {
-        const listOrder = (customer[0].listOrder.length > 0) ? ([...String(customer[0].listOrder).split(','), String(order._id)]) : ([String(order._id)])
-        const update = await Customer.findOneAndUpdate({ _id: customer[0]._id }, { listOrder: listOrder }, { new: true, runValidators: true })
+        console.log(customer.listOrder)
+        const listOrder = (customer.listOrder.length > 0) ? ([...String(customer.listOrder).split(','), String(order._id)]) : ([String(order._id)])
+        const update = await Customer.findOneAndUpdate({ _id: customer._id }, { listOrder: listOrder }, { new: true, runValidators: true })
         console.log(update)
     }
     // const newOrder = await Order.create({ ...req.body })
@@ -54,7 +59,7 @@ const createOrder = async (req, res) => {
 
 const updateOrder = async (req, res) => {
     const { id: orderId } = req.params;
-    const {status} = req.body
+    const { status } = req.body
     const order = await Order.findOneAndUpdate({ _id: orderId }, { status: status }, {
         new: true,
         runValidators: true,
@@ -83,9 +88,17 @@ const deleteOrder = async (req, res) => {
 
 }
 
+const searchOrder = async (req, res) => {
+    const key = req.params.key.trim()
+    const orders = await Product.find({ _id: { $regex: new RegExp('^' + key + '.*', 'i') } }).limit(32)
+    if (orders.length === 0) throw new BadRequestError('There is no order')
+    res.status(StatusCodes.OK).json({ error: false, orders: orders })
+}
+
 module.exports = {
     getListOrder,
     createOrder,
     updateOrder,
-    deleteOrder
+    deleteOrder,
+    searchOrder
 }
