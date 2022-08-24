@@ -1,5 +1,6 @@
 const Order = require('../models/Order')
 const Customer = require('../models/Customer')
+const Product = require('../models/Product')
 const stringifyArray = require('../utils/stringifyArray')
 const { StatusCodes } = require('http-status-codes')
 const { BadRequestError, UnauthenticatedError, NotFoundError } = require('../errors')
@@ -50,8 +51,27 @@ const createOrder = async (req, res) => {
         const update = await Customer.findOneAndUpdate({ _id: customer._id }, { listOrder: listOrder }, { new: true, runValidators: true })
         console.log(update)
     }
-    // const newOrder = await Order.create({ ...req.body })
-    res.status(StatusCodes.CREATED).json({ error: false, order })
+
+    //update product 
+    const orderItems = req.body.orderItems.reduce((arr,item)=>{
+        arr.push(item.product)
+        return arr
+    },[])
+    const products = await Product.find({_id:orderItems})
+    products.forEach((item)=>{
+        req.body.orderItems.forEach(product=>{
+            console.log(product.product , String(item._id))
+
+            if(product.product === String(item._id)) {
+                item.quantity -= product.amount
+                item.totalOrder++
+                item.save()
+            }
+        })
+    })  
+    
+    //response
+    res.status(StatusCodes.CREATED).json({ error: false })
 }
 
 // Protected Route 
