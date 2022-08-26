@@ -8,23 +8,46 @@ const asynWrapper = require('../middleware/asyncWrapper')
 const Order = require('../models/Order')
 const Customer = require('../models/Customer')
 const Review = require('../models/Review')
+const moment = require('moment')
 
 const query = asynWrapper(async (req, res) => {
     // const order= await Order.deleteMany()
     // const customer = await Customer.deleteMany()
     // const result = await Review.deleteMany()
-    const result = await Customer.find()
-    res.status(200).json({ msg: 'execute completed',result})
+    const today = moment().startOf('day')
+    console.log(moment().subtract(1, 'weeks').startOf('week').format('YYYY-MM-DD'));
+    console.log(moment().subtract(1, 'weeks').endOf('week').format('YYYY-MM-DD'));
+    console.log(moment().subtract(1, 'months').startOf('month').format('YYYY-MM-DD'));
+    console.log(moment().subtract(1, 'months').endOf('month').format('YYYY-MM-DD'));
+    const lastWeekOrders = await User.find({
+        createdAt: {
+            $gte: moment().subtract(1, 'weeks').startOf('week').toDate(),
+            $lte: moment().subtract(1, 'weeks').endOf('week').toDate()
+        }
+    })
+    res.status(200).json({ msg: 'execute completed', lastWeekOrders })
 })
 
-const getAdminHome = async(req,res)=>{
+const getAdminHome = async (req, res) => {
     const totalOrder = Order.find().countDocuments()
     const totalUser = User.find().countDocuments()
     const data = {
-        totalOrder : await totalOrder,
-        totalUser : await totalUser,
+        totalOrder: await totalOrder,
+        totalUser: await totalUser,
     }
-    res.status(200).json({error:false, data})
+    const today = moment().startOf('day')
+    const todayOrders = await Order.find({
+        createdAt: {
+            $gte: today.toDate(),
+            $lte: moment(today).endOf('day').toDate()
+        }
+    })
+    let totalSales = 0
+    todayOrders.forEach((order) => {
+        totalSales += order.total
+    })
+    console.log(totalSales)
+    res.status(200).json({ error: false, data, totalSales })
 }
 
 module.exports = {

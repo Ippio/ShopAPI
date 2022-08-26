@@ -12,44 +12,31 @@ const upload = require('../middleware/multer-upload')
 
 const getHome = async (req, res) => {
     const arr = ['dien-thoai', 'may-tinh-xach-tay', 'may-tinh-bang']
-    const listProductType = await ProductType.find({ nameAscii: arr }, '_id')
-    const arr1 = listProductType.reduce((arr, type) => {
-        arr.push(type._id)
-        return arr
-    }, [])
-    const products = await Product.find({ productType: arr1 }, '',
-        {
-            projection: {
-                listPictureBreakBox: 0,
-                listPictureFromCamera: 0,
-                listPictureGallery: 0,
-                listPictureInBox: 0,
-                productAttributes: 0,
-                listAttrDetailShort: 0,
-                listPictureSlide: 0
-            }
-        }).limit(24).sort('totalOrder').populate('brand', 'name').populate('productType', 'name nameAscii')
-    const obj = {
-        phone: [],
-        laptop: [],
-        ipad: []
-    }
-    products.forEach(product => {
-        // console.log(product.productType.nameAscii)
-        switch (product.productType.nameAscii) {
+    const listProductType = await ProductType.find({ nameAscii: arr })
+    const productType = {}
+    listProductType.forEach(item => {
+        switch (item.nameAscii) {
             case 'dien-thoai':
-                obj.phone = [...obj.phone, product]
-                break;
-            case 'may-tinh-xach-tay':
-                obj.laptop = [...obj.laptop, product]
+                productType.phone = (item._id)
                 break;
             case 'may-tinh-bang':
-                obj.ipad = [...obj.ipad, product]
+                productType.ipad = (item._id)
+                break;
+            case 'may-tinh-xach-tay':
+                productType.laptop = (item._id)
                 break;
             default:
                 break;
         }
     })
+    const laptop = await Product.find({ productType: productType.laptop }).limit(8).sort('-totalOrder').populate('brand', 'name').populate('productType')
+    const phone = await Product.find({ productType: productType.phone }).limit(8).sort('-totalOrder').populate('brand', 'name').populate('productType')
+    const ipad = await Product.find({ productType: productType.ipad }).limit(8).sort('-totalOrder').populate('brand', 'name').populate('productType')
+    const obj = {
+        phone: await phone,
+        laptop: await laptop,
+        ipad: await ipad
+    }
     res.status(StatusCodes.OK).json({ error: false, products: obj })
     // const 
 }
@@ -83,7 +70,7 @@ const getProductList = asyncWrapper(async (req, res) => {
     const type = await (ProductType.findOne({ nameAscii: productType }, '_id'))
 
     const page = Number(req.query.page) || 1
-    const limit = 20
+    const limit = 12
     const skip = (page - 1) * limit
 
     if (type) {
