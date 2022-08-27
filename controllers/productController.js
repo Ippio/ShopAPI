@@ -146,7 +146,7 @@ const FindByID = async (req, res) => {
 // Create Product   =>    POST /product
 const createProduct = async (req, res) => {
     // kiểm tra sản phẩm tồn tại hay k
-    const check = await Product.findOne({ name: req.body.nameAscii })
+    const check = await Product.findOne({ name: req.body.name })
     if (check) throw new BadRequestError('Tên sản phẩm đã tồn tại')
 
     try {
@@ -201,6 +201,8 @@ const deleteProduct = async (req, res) => {
 
 const searchProduct = async (req, res) => {
     const key = req.params.key.trim()
+    console.log(key)
+    if(!key) throw NotFoundError('404 Not Found')
     const products = await Product.find({ name: { $regex: new RegExp('^' + key + '.*', 'i') } }).limit(8)
     if (products.length === 0) throw new BadRequestError('There is no product')
     res.status(StatusCodes.OK).json({ error: false, products: products })

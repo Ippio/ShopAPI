@@ -46,7 +46,6 @@ const getAdminHome = async (req, res) => {
     todayOrders.forEach((order) => {
         totalSales += order.total
     })
-    console.log(totalSales)
     res.status(200).json({ error: false, data, totalSales })
 }
 
